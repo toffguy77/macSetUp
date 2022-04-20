@@ -1,0 +1,44 @@
+---
+
+- name: Install Python versions
+  homebrew:
+    name:
+      - python
+      - python3
+      - pypy
+    state: present
+  tags: python
+
+- name: Install virtualenv
+  command: >
+    /usr/bin/pip3 install virtualenv
+    creates=/usr/local/bin/virtualenv
+  tags: python
+
+- name: Install virtualenvwrapper
+  pip:
+    name: 
+      - virtualenvwrapper
+  tags: python
+
+- name: Install OpenSSL for Python
+  homebrew:
+    name: openssl
+    state: linked
+  tags: python
+
+- name: Tap older Python repo
+  homebrew_tap: name=derekkwok/python
+  tags: python
+
+- name: Add pip directory
+  file:
+    name: ~/.pip
+    state: directory
+  tags: python
+
+- name: Setup pip configuration
+  copy: >
+    dest=~/.pip/pip.conf
+    src=pip.conf
+  tags: python

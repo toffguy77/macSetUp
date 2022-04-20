@@ -1,0 +1,52 @@
+---
+- hosts: local
+  roles:
+    - homebrew
+    - utils
+    - common
+    - dev
+    - tmux
+    - git
+    - zsh
+    - prezto
+    - golang
+    - python
+    - docker
+    - role: vscode-extentions
+      users:
+        - username: "{{ ansible_user_id }}"
+          visual_studio_code_extensions:
+            - golang.go
+            - ms-python.python
+            - formulahendry.code-runner
+            - equinusocio.vsc-community-material-theme
+            - deerawan.vscode-dash
+            - fabiospampinato.vscode-diff
+            - ms-azuretools.vscode-docker
+            - dracula-theme.theme-dracula
+            - janisdd.vscode-edit-csv
+            - eamodio.gitlens
+            - hashicorp.terraform
+            - george-alisson.html-preview-vscode
+            - ms-kubernetes-tools.vscode-kubernetes-tools
+            - technosophos.vscode-make
+            - shd101wyy.markdown-preview-enhanced
+            - davidanson.vscode-markdownlint
+            - pkief.material-icon-theme
+            - equinusocio.vsc-material-theme
+            - christian-kohler.path-intellisense
+            - pnp.polacode
+            - esbenp.prettier-vscode
+            - ms-python.python
+            - ms-vscode-remote.remote-wsl
+            - ms-vscode-remote.vscode-remote-extensionpack
+            - korekontrol.saltstack
+            - bibhasdn.unique-lines
+            - vscode-icons-team.vscode-icons
+            - zxh404.vscode-proto3
+            - redhat.vscode-yaml
+            - gruntfuggly.todo-tree
+            - humao.rest-client
+            - oderwat.indent-rainbow
+            - tabnine.tabnine-vscode
+            - mechatroner.rainbow-csv

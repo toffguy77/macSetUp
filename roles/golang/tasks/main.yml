@@ -1,0 +1,36 @@
+---
+- name: Install Go (Mac)
+  homebrew:
+    name:
+      - go
+      - golangci-lint
+    state: present
+  register: golang
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in golang.msg'
+    - '"It seems there is already" not in golang.msg'
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Install Go tools
+  command: go install golang.org/x/tools/...@latest
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Install Jetbrains Goland
+  homebrew_cask:
+    name:
+      - goland
+    state: present
+  register: goland
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in goland.msg'
+    - '"It seems there is already" not in goland.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common

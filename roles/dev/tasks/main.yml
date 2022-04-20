@@ -1,0 +1,39 @@
+---
+- name: install development libraries (Mac)
+  homebrew:
+    name: 
+      - libevent
+      - libxml2
+    state: present
+  when: ansible_os_family == 'Darwin'
+  tags: dev
+
+- name: Add development desktop tools
+  homebrew_cask:
+    name:
+      - pycharm
+      - sequel-pro
+      - postico
+    state: present
+  register: devtools
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in devtools.msg'
+    - '"It seems there is already" not in devtools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: dev
+
+- name: Virtualization for Dev
+  homebrew_cask:
+    name:
+      - virtualbox
+      - vagrant
+      - docker
+    state: present
+  register: virt
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in virt.msg'
+    - '"It seems there is already" not in virt.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: dev

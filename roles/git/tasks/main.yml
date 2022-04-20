@@ -1,0 +1,9 @@
+---
+- name: install Git stuff
+  homebrew:
+    name:
+      - git
+      - git-extras
+    state: latest
+  when: ansible_os_family == 'Darwin'
+  tags: git

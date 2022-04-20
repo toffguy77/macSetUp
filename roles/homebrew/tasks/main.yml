@@ -1,0 +1,7 @@
+---
+- name: Update Homebrew
+  command: brew update
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos

@@ -1,0 +1,140 @@
+---
+- name: Install X-Code and tools (step 1)
+  become: yes
+  command: /usr/sbin/softwareupdate --all --install --force --restart
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Install X-Code and tools (step 2)
+  become: yes
+  command: /usr/bin/xcode-select --install
+  register: xcoderesult
+  failed_when: "'FAILED' in xcoderesult.stderr"
+  changed_when:
+    - xcoderesult.rc == 0
+    - '"command line tools are already installed" in xcoderesult.stderr'
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+#- name: Install X-Code and tools (step 3)
+#  become: yes
+#  command: /usr/bin/xcodebuild -license 
+#  when: ansible_os_family == 'Darwin'
+#  tags:
+#    - common
+#    - macos
+
+- name: Install Rosetta 2 for M1 processor
+  command: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+  register: rosetta
+  failed_when:
+    - rosetta.rc != 0
+    - '"Installing Rosetta 2 on this system is not supported" not in rosetta.stdout'
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Add browsers
+  homebrew_cask:
+    name:
+      - brave-browser
+    state: present
+  register: browsers
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in browsers.msg'
+    - '"It seems there is already" not in browsers.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: Add desktop utility tools
+  homebrew_cask:
+    name:
+      - dash
+      - alfred
+      - caffeine
+      - gpgtools
+      - handbrake
+      - balenaetcher
+      - divvy
+      - onyx
+    state: present
+  register: utility_tools
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in utility_tools.msg'
+    - '"It seems there is already" not in utility_tools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: Add general desktop tools
+  homebrew_cask:
+    name:
+      - iterm2
+      - marta
+      - 1password
+      - cyberduck
+      - folx
+      - notion
+      - omnifocus
+      - telegram
+      - yandex-disk
+      - whatsapp
+      - caramba-switcher
+      - zoom
+    state: present
+  register: desktop_tools
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in desktop_tools.msg'
+    - '"It seems there is already" not in desktop_tools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: Tap fonts' repo
+  homebrew_tap: name=homebrew/cask-fonts
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Install fonts
+  homebrew_cask:
+    name:
+      - font-hack-nerd-font
+      - font-fira-code
+    state: present
+  register: fonts
+  ignore_errors: yes
+  failed_when:
+    - '"Error:" in fonts.msg'
+    - '"It seems there is already" not in fonts.msg'
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Add screenshots directory
+  vars:
+    - screenshot_dir: ~/Desktop/Screenshots
+  register: screenshot_dir
+  file:
+      path: '{{ screenshot_dir }}'
+      state: directory
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: Set current screenshot directory
+  command: "defaults write com.apple.screencapture location {{ screenshot_dir.path }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
