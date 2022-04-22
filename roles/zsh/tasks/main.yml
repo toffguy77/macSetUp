@@ -1,6 +1,9 @@
 ---
 - name: Install zsh
-  homebrew: name=zsh state=latest
+  homebrew:
+    name:
+      - zsh
+    state: latest
   when: ansible_os_family == 'Darwin'
   tags: zsh
 
@@ -35,4 +38,26 @@
 
 - name: Add zshrc file
   copy: src=zshrc dest=~/.zshrc
+  tags: zsh
+
+- name: Install zsh-syntax-highlighting plugin
+  homebrew:
+    name:
+      - zsh-syntax-highlighting
+    state: latest
+  when: ansible_os_family == 'Darwin'
+  tags: zsh
+
+- name: Install zsh git plugin
+  git: repo=https://github.com/davidde/git.git
+       dest=~/.oh-my-zsh/custom/plugins/
+       recursive=yes
+  when: ansible_os_family == 'Darwin'
+  tags: zsh
+
+- name: Install zsh history search
+  git:  repo=https://github.com/marlonrichert/zsh-autocomplete.git
+        dest=~/.oh-my-zsh/custom/plugins
+        recursive=yes
+  when: ansible_os_family == 'Darwin'
   tags: zsh

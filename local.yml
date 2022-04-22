@@ -12,6 +12,7 @@
     - golang
     - python
     - docker
+    - appstore
     - role: vscode-extentions
       users:
         - username: "{{ ansible_user_id }}"

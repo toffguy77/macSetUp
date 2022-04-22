@@ -33,6 +33,9 @@ if [[ ! -x /usr/local/bin/ansible ]]; then
     brew install ansible
 fi
 
+# Install mas-cli for Mac App Store support
+ansible-galaxy collection install community.general
+
 # Modify the PATH
 # This should be subsequently updated in shell settings
 export PATH=/usr/local/bin:$PATH
