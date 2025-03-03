@@ -5,3 +5,14 @@
   tags:
     - common
     - macos
+
+- name: Show progress for updating Homebrew
+  community.general.progress_bar:
+    msg: "Updating Homebrew... ({{ update_result.elapsed }}s)"
+    total: 100
+    current: "{{ (update_result.elapsed / 100) | int }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+  register: update_result

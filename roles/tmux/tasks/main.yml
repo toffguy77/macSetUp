@@ -6,11 +6,12 @@
     state: latest
   when: ansible_os_family == 'Darwin'
   tags: tmux
+  register: tmux_install_result
 
 - name: Add tmux.conf
   copy: src=tmux.conf dest=~/.tmux.conf
   tags: tmux
-
+  register: tmux_conf_result
 
 - name: Add .tmux plugins directory
   file:
@@ -18,9 +19,13 @@
     state: directory
     recurse: yes
   tags: tmux
+  register: tmux_plugins_dir_result
 
 - name: Add tmux plugin manager
-  git: repo=https://github.com/tmux-plugins/tpm.git
-    dest=~/.tmux/plugins/tpm
-    version=v3.0.0
+  git: 
+    repo: https://github.com/tmux-plugins/tpm.git
+    dest: ~/.tmux/plugins/tpm
+    version: v3.0.0
   tags: tmux
+  register: tmux_plugin_manager_result
+

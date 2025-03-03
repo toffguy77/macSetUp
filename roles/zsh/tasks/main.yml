@@ -1,15 +1,17 @@
 ---
 - name: Install zsh
-  homebrew: name=zsh state=latest
+  homebrew: 
+    name: zsh 
+    state: latest
   when: ansible_os_family == 'Darwin'
   tags: zsh
 
 - name: Add zsh to list of shells
-  lineinfile: >
-    backup=yes
-    dest=/etc/shells
-    regexp=^/usr/local/bin/zsh
-    line=/usr/local/bin/zsh
+  lineinfile:
+    backup: yes
+    dest: /etc/shells
+    regexp: ^/usr/local/bin/zsh
+    line: /usr/local/bin/zsh
   when: ansible_os_family == 'Darwin'
   become: true
 
@@ -21,18 +23,20 @@
   shell: chsh -s /usr/bin/zsh {{ ansible_env.USER }}
   when: ansible_os_family == 'Ubuntu'
 
-- name: Install oh-my-zsh
-  git: repo=https://github.com/robbyrussell/oh-my-zsh.git
-       dest=~/.oh-my-zsh
-       recursive=yes
+- name: Install zinit
+  homebrew:
+    name:
+      - zinit
+    state: latest
+  when: ansible_os_family == 'Darwin'
   tags: zsh
 
-- name: Ensure oh-my-zsh-custom directory
-  file:
-    name: ~/.oh-my-zsh-custom
-    state: directory
+- name: Update zinit
+  shell: zinit self-update
   tags: zsh
 
 - name: Add zshrc file
-  copy: src=zshrc dest=~/.zshrc
+  copy: 
+    src: zshrc 
+    dest: ~/.zshrc
   tags: zsh

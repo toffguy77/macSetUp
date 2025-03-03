@@ -1,14 +1,26 @@
 ---
 - name: Install X-Code and tools (step 1)
-  become: yes
+  become: true
   command: /usr/sbin/softwareupdate --all --install --force --restart
   when: ansible_os_family == 'Darwin'
   tags:
     - common
     - macos
+  async: 1000
+  poll: 10
+  register: xcode_install
+  until: xcode_install.finished
+  retries: 30
+  delay: 10
+  ignore_errors: true
+  notify: xcode_install_status
+  community.general.progress_bar:
+    msg: "Installing X-Code and tools (step 1)... ({{ xcode_install.elapsed }}s)"
+    total: 100
+    current: "{{ (xcode_install.elapsed / 100) | int }}"
 
 - name: Install X-Code and tools (step 2)
-  become: yes
+  become: true
   command: /usr/bin/xcode-select --install
   register: xcoderesult
   failed_when: "'FAILED' in xcoderesult.stderr"
@@ -19,14 +31,20 @@
   tags:
     - common
     - macos
-
-#- name: Install X-Code and tools (step 3)
-#  become: yes
-#  command: /usr/bin/xcodebuild -license 
-#  when: ansible_os_family == 'Darwin'
-#  tags:
-#    - common
-#    - macos
+  async: 1000
+  poll: 10
+  until: xcoderesult.finished
+  retries: 30
+  delay: 10
+  ignore_errors: true
+  notify: xcode_install_status
+  debug:
+    msg: "Installing X-Code command line tools... ({{ xcoderesult.started | default(0) }}s)"
+  interval: 10
+  community.general.progress_bar:
+    msg: "Installing X-Code and tools (step 2)... ({{ xcoderesult.elapsed }}s)"
+    total: 100
+    current: "{{ (xcoderesult.elapsed / 100) | int }}"
 
 - name: Install Rosetta 2 for M1 processor
   command: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
@@ -38,63 +56,150 @@
   tags:
     - common
     - macos
-
-- name: Add browsers
-  homebrew_cask:
-    name:
-      - brave-browser
-    state: present
-  register: browsers
-  ignore_errors: yes
-  failed_when:
-    - '"Error:" in browsers.msg'
-    - '"It seems there is already" not in browsers.msg'
-  when: ansible_os_family == 'Darwin'
-  tags: common
+  community.general.progress_bar:
+    msg: "Installing Rosetta 2... ({{ rosetta.elapsed }}s)"
+    total: 100
+    current: "{{ (rosetta.elapsed / 100) | int }}"
 
 - name: Add desktop utility tools
   homebrew_cask:
     name:
       - dash
-      - alfred
-      - caffeine
-      - gpgtools
-      - handbrake
-      - balenaetcher
       - divvy
-      - onyx
+      - gpgtools
     state: present
   register: utility_tools
-  ignore_errors: yes
+  ignore_errors: true
   failed_when:
     - '"Error:" in utility_tools.msg'
     - '"It seems there is already" not in utility_tools.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
+  community.general.progress_bar:
+    msg: "Installing desktop utility tools... ({{ utility_tools.elapsed }}s)"
+    total: 100
+    current: "{{ (utility_tools.elapsed / 100) | int }}"
 
-- name: Add general desktop tools
+- name: Add browsers
   homebrew_cask:
     name:
-      - iterm2
-      - marta
-      - 1password
-      - cyberduck
-      - folx
-      - notion
-      - omnifocus
-      - telegram
-      - yandex-disk
-      - whatsapp
-      - caramba-switcher
-      - zoom
+      - arc
+      - firefox
+      - google-chrome
     state: present
-  register: desktop_tools
-  ignore_errors: yes
+  register: browsers
+  ignore_errors: true
   failed_when:
-    - '"Error:" in desktop_tools.msg'
-    - '"It seems there is already" not in desktop_tools.msg'
+    - '"Error:" in browsers.msg'
+    - '"It seems there is already" not in browsers.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
+  community.general.progress_bar:
+    msg: "Installing browsers... ({{ browsers.elapsed }}s)"
+    total: 100
+    current: "{{ (browsers.elapsed / 100) | int }}"
+
+- name: Add development tools
+  homebrew_cask:
+    name:
+      - visual-studio-code
+      - warp
+      - zed
+      - intellij-goland-ce
+      - postman
+      - insomnia
+    state: present
+  register: development_tools
+  ignore_errors: true
+  failed_when:
+    - '"Error:" in development_tools.msg'
+    - '"It seems there is already" not in development_tools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+  community.general.progress_bar:
+    msg: "Installing development tools... ({{ development_tools.elapsed }}s)"
+    total: 100
+    current: "{{ (development_tools.elapsed / 100) | int }}"
+
+- name: Add utilities
+  homebrew_cask:
+    name:
+      - balenaetcher
+      - caffeine
+      - onyx
+      - raycast
+      - the-unarchiver
+      - keka
+      - omni-focus
+      - telegram
+      - whatsapp
+    state: present
+  register: utilities
+  ignore_errors: true
+  failed_when:
+    - '"Error:" in utilities.msg'
+    - '"It seems there is already" not in utilities.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+  community.general.progress_bar:
+    msg: "Installing utilities... ({{ utilities.elapsed }}s)"
+    total: 100
+    current: "{{ (utilities.elapsed / 100) | int }}"
+
+- name: Add productivity tools
+  homebrew_cask:
+    name:
+      - obsidian
+      - zoom
+      - microsoft-office
+    state: present
+  register: productivity_tools
+  ignore_errors: true
+  failed_when:
+    - '"Error:" in productivity_tools.msg'
+    - '"It seems there is already" not in productivity_tools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+  community.general.progress_bar:
+    msg: "Installing productivity tools... ({{ productivity_tools.elapsed }}s)"
+    total: 100
+    current: "{{ (productivity_tools.elapsed / 100) | int }}"
+
+- name: Add file sync tools
+  homebrew_cask:
+    name:
+      - yandex-disk
+    state: present
+  register: file_sync_tools
+  ignore_errors: true
+  failed_when:
+    - '"Error:" in file_sync_tools.msg'
+    - '"It seems there is already" not in file_sync_tools.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+  community.general.progress_bar:
+    msg: "Installing file sync tools... ({{ file_sync_tools.elapsed }}s)"
+    total: 100
+    current: "{{ (file_sync_tools.elapsed / 100) | int }}"
+
+- name: Add media applications
+  homebrew_cask:
+    name:
+      - vlc
+      - handbrake
+      - iina
+    state: present
+  register: media_applications
+  ignore_errors: true
+  failed_when:
+    - '"Error:" in media_applications.msg'
+    - '"It seems there is already" not in media_applications.msg'
+  when: ansible_os_family == 'Darwin'
+  tags: common
+  community.general.progress_bar:
+    msg: "Installing media applications... ({{ media_applications.elapsed }}s)"
+    total: 100
+    current: "{{ (media_applications.elapsed / 100) | int }}"
 
 - name: Tap fonts' repo
   homebrew_tap: name=homebrew/cask-fonts
@@ -102,6 +207,10 @@
   tags:
     - common
     - macos
+  community.general.progress_bar:
+    msg: "Tapping fonts' repo... ({{ homebrew_tap.elapsed }}s)"
+    total: 100
+    current: "{{ (homebrew_tap.elapsed / 100) | int }}"
 
 - name: Install fonts
   homebrew_cask:
@@ -110,7 +219,7 @@
       - font-fira-code
     state: present
   register: fonts
-  ignore_errors: yes
+  ignore_errors: true
   failed_when:
     - '"Error:" in fonts.msg'
     - '"It seems there is already" not in fonts.msg'
@@ -118,10 +227,14 @@
   tags:
     - common
     - macos
+  community.general.progress_bar:
+    msg: "Installing fonts... ({{ fonts.elapsed }}s)"
+    total: 100
+    current: "{{ (fonts.elapsed / 100) | int }}"
 
 - name: Add screenshots directory
   vars:
-    - screenshot_dir: ~/Desktop/Screenshots
+    screenshot_dir: ~/Desktop/Screenshots
   register: screenshot_dir
   file:
       path: '{{ screenshot_dir }}'
@@ -130,6 +243,10 @@
   tags:
     - common
     - macos
+  community.general.progress_bar:
+    msg: "Adding screenshots directory... ({{ screenshot_dir.elapsed }}s)"
+    total: 100
+    current: "{{ (screenshot_dir.elapsed / 100) | int }}"
 
 - name: Set current screenshot directory
   command: "defaults write com.apple.screencapture location {{ screenshot_dir.path }}"
@@ -137,4 +254,7 @@
   tags:
     - common
     - macos
-
+  community.general.progress_bar:
+    msg: "Setting current screenshot directory... ({{ command.elapsed }}s)"
+    total: 100
+    current: "{{ (command.elapsed / 100) | int }}"

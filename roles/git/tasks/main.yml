@@ -1,5 +1,5 @@
 ---
-- name: install Git stuff
+- name: install Git packages
   homebrew:
     name:
       - git

@@ -1,6 +1,6 @@
 ---
 
-- name: Install Python versions
+- name: install Python versions
   homebrew:
     name:
       - python
@@ -9,16 +9,10 @@
     state: present
   tags: python
 
-- name: Install virtualenv
-  command: >
-    /usr/bin/pip3 install virtualenv
-    creates=/usr/local/bin/virtualenv
-  tags: python
-
-- name: Install virtualenvwrapper
+- name: install uv
   pip:
     name: 
-      - virtualenvwrapper
+      - uv
   tags: python
 
 - name: Install OpenSSL for Python
@@ -27,18 +21,25 @@
     state: linked
   tags: python
 
-- name: Tap older Python repo
-  homebrew_tap: name=derekkwok/python
-  tags: python
-
 - name: Add pip directory
   file:
     name: ~/.pip
     state: directory
   tags: python
 
+- name: Install pip
+  block:
+    - name: Install latest Python with brew
+      command: brew install --latest python
+  become: true
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
 - name: Setup pip configuration
-  copy: >
-    dest=~/.pip/pip.conf
-    src=pip.conf
+  copy:
+    dest: ~/.pip/pip.conf
+    src: pip.conf
   tags: python
+

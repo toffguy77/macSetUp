@@ -1,39 +1,146 @@
 ---
-- name: install development libraries (Mac)
-  homebrew:
+- name: install general development libraries (Mac)
+  community.general.homebrew:
     name: 
       - libevent
       - libxml2
+      - git
+      - golangci-lint
+      - fzf
+      - htop
+      - ack
+      - tree
+      - telnet
+      - wget
+      - jq
+      - yq
+      - tmux
+      - screen
+      - vim
+      - python@3
+      - golang
+      - uv
     state: present
   when: ansible_os_family == 'Darwin'
+  register: general_dev
   tags: dev
 
-- name: Add development desktop tools
-  homebrew_cask:
-    name:
-      - pycharm
-      - sequel-pro
-      - postico
+
+- name: install media libraries (Mac)
+  community.general.homebrew:
+    name: 
+      - ffmpeg
+      - x264
+      - x265
+      - imagemagick
+      - jpeg
+      - libpng
+      - libtiff
+      - webp
     state: present
-  register: devtools
-  ignore_errors: yes
-  failed_when:
-    - '"Error:" in devtools.msg'
-    - '"It seems there is already" not in devtools.msg'
   when: ansible_os_family == 'Darwin'
-  tags: dev
+  register: media
+  tags: media
 
-- name: Virtualization for Dev
-  homebrew_cask:
+
+- name: install compression libraries (Mac)
+  community.general.homebrew:
+    name: 
+      - xz
+      - zstd
+      - brotli
+      - gzip
+      - p7zip
+      - lz4
+      - pigz
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: compression
+  tags: compression
+
+
+- name: install security libraries (Mac)
+  community.general.homebrew:
+    name: 
+      - openssl@3
+      - ca-certificates
+      - gnupg
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: security
+  tags: security
+
+
+- name: install networking tools (Mac)
+  community.general.homebrew:
+    name: 
+      - nmap
+      - curl
+      - netcat
+      - socat
+      - tcpdump
+      - wireshark
+      - mtr
+      - dnsmasq
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: networking
+  tags: networking
+
+
+- name: install build tools (Mac)
+  community.general.homebrew:
+    name: 
+      - cmake
+      - ninja
+      - make
+      - automake
+      - autoconf
+      - libtool
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: build
+  tags: build
+
+
+- name: install Kubernetes tools (Mac)
+  community.general.homebrew:
     name:
-      - virtualbox
-      - vagrant
+      - helm
+      - kubernetes-cli
+      - kubectl
+      - kustomize
+      - skaffold
+      - kind
+      - k9s
+      - minikube
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: k8s
+  tags: k8s
+
+
+- name: install containerization tools (Mac)
+  community.general.homebrew:
+    name:
+      - podman
+    state: present
+  when: ansible_os_family == 'Darwin'
+  register: containerization
+  tags: containerization
+
+
+- name: add development desktop tools (Mac)
+  community.general.homebrew:
+    name:
+      - visual-studio-code
+      - sublime-text
+      - iterm2
+      - sourcetree
+      - postman
       - docker
     state: present
-  register: virt
-  ignore_errors: yes
-  failed_when:
-    - '"Error:" in virt.msg'
-    - '"It seems there is already" not in virt.msg'
   when: ansible_os_family == 'Darwin'
-  tags: dev
+  register: desktop_tools
+  tags: desktop
+
