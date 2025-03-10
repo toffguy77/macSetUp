@@ -1,5 +1,17 @@
 ---
-- name: Install X-Code and tools (step 1)
+- name: "DEBUG | STARTING COMMON ROLE INSTALLATION"
+  debug:
+    msg: "Beginning installation of common system tools and applications"
+
+######################
+# XCODE INSTALLATION #
+######################
+
+- name: "DEBUG | Starting Xcode installation section"
+  debug:
+    msg: "Starting Xcode and Developer Tools installation"
+
+- name: "Xcode | Update and install all system software updates"
   become: true
   command: /usr/sbin/softwareupdate --all --install --force --restart
   when: ansible_os_family == 'Darwin'
@@ -14,12 +26,8 @@
   delay: 10
   ignore_errors: true
   notify: xcode_install_status
-  community.general.progress_bar:
-    msg: "Installing X-Code and tools (step 1)... ({{ xcode_install.elapsed }}s)"
-    total: 100
-    current: "{{ (xcode_install.elapsed / 100) | int }}"
 
-- name: Install X-Code and tools (step 2)
+- name: "Xcode | Install Command Line Developer Tools"
   become: true
   command: /usr/bin/xcode-select --install
   register: xcoderesult
@@ -38,15 +46,21 @@
   delay: 10
   ignore_errors: true
   notify: xcode_install_status
-  debug:
-    msg: "Installing X-Code command line tools... ({{ xcoderesult.started | default(0) }}s)"
-  interval: 10
-  community.general.progress_bar:
-    msg: "Installing X-Code and tools (step 2)... ({{ xcoderesult.elapsed }}s)"
-    total: 100
-    current: "{{ (xcoderesult.elapsed / 100) | int }}"
 
-- name: Install Rosetta 2 for M1 processor
+- name: "DEBUG | Xcode installation status"
+  debug: 
+    msg: "{% if xcoderesult is defined %}{{ xcoderesult.stderr | default('Command line tools successfully processed') }}{% else %}Xcode installation process completed{% endif %}"
+  when: ansible_os_family == 'Darwin'
+
+#######################
+# ROSETTA INSTALLATION #
+#######################
+
+- name: "DEBUG | Starting Rosetta 2 installation section"
+  debug:
+    msg: "Checking if Rosetta 2 installation is needed for Apple Silicon"
+
+- name: "Rosetta | Install Rosetta 2 translation layer for M1/M2 Macs"
   command: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
   register: rosetta
   failed_when:
@@ -56,12 +70,21 @@
   tags:
     - common
     - macos
-  community.general.progress_bar:
-    msg: "Installing Rosetta 2... ({{ rosetta.elapsed }}s)"
-    total: 100
-    current: "{{ (rosetta.elapsed / 100) | int }}"
 
-- name: Add desktop utility tools
+- name: "DEBUG | Rosetta installation status"
+  debug:
+    msg: "{% if rosetta.rc == 0 %}Rosetta 2 installation completed successfully{% elif 'Installing Rosetta 2 on this system is not supported' in rosetta.stdout|default('') %}Rosetta 2 not needed for this system (Intel Mac){% else %}Rosetta 2 installation failed or was already installed{% endif %}"
+  when: ansible_os_family == 'Darwin'
+
+#########################
+# APPLICATION SELECTION #
+#########################
+
+- name: "DEBUG | Starting Application Installation Section"
+  debug:
+    msg: "Beginning installation of desktop applications and utilities"
+
+- name: "Applications | Install desktop utility tools (Dash, Divvy, GPGTools)"
   homebrew_cask:
     name:
       - dash
@@ -75,12 +98,14 @@
     - '"It seems there is already" not in utility_tools.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing desktop utility tools... ({{ utility_tools.elapsed }}s)"
-    total: 100
-    current: "{{ (utility_tools.elapsed / 100) | int }}"
 
-- name: Add browsers
+- name: "DEBUG | Desktop utility tools installation status"
+  debug:
+    msg: "{% if utility_tools.changed %}Desktop utility tools installed: {{ utility_tools.installed | default([]) }}{% else %}No changes to desktop utility tools{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install web browsers (Arc, Firefox, Chrome)"
   homebrew_cask:
     name:
       - arc
@@ -94,12 +119,14 @@
     - '"It seems there is already" not in browsers.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing browsers... ({{ browsers.elapsed }}s)"
-    total: 100
-    current: "{{ (browsers.elapsed / 100) | int }}"
 
-- name: Add development tools
+- name: "DEBUG | Browser installation status"
+  debug:
+    msg: "{% if browsers.changed %}Browsers installed: {{ browsers.installed | default([]) }}{% else %}No changes to browsers{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install development tools (VS Code, Warp, Zed, GoLand, Postman, Insomnia)"
   homebrew_cask:
     name:
       - visual-studio-code
@@ -116,12 +143,14 @@
     - '"It seems there is already" not in development_tools.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing development tools... ({{ development_tools.elapsed }}s)"
-    total: 100
-    current: "{{ (development_tools.elapsed / 100) | int }}"
 
-- name: Add utilities
+- name: "DEBUG | Development tools installation status"
+  debug:
+    msg: "{% if development_tools.changed %}Development tools installed: {{ development_tools.installed | default([]) }}{% else %}No changes to development tools{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install system utilities (Etcher, Caffeine, OnyX, Raycast, Archivers, Messaging)"
   homebrew_cask:
     name:
       - balenaetcher
@@ -141,12 +170,14 @@
     - '"It seems there is already" not in utilities.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing utilities... ({{ utilities.elapsed }}s)"
-    total: 100
-    current: "{{ (utilities.elapsed / 100) | int }}"
 
-- name: Add productivity tools
+- name: "DEBUG | System utilities installation status"
+  debug:
+    msg: "{% if utilities.changed %}System utilities installed: {{ utilities.installed | default([]) }}{% else %}No changes to system utilities{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install productivity tools (Obsidian, Zoom, Microsoft Office)"
   homebrew_cask:
     name:
       - obsidian
@@ -160,12 +191,14 @@
     - '"It seems there is already" not in productivity_tools.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing productivity tools... ({{ productivity_tools.elapsed }}s)"
-    total: 100
-    current: "{{ (productivity_tools.elapsed / 100) | int }}"
 
-- name: Add file sync tools
+- name: "DEBUG | Productivity tools installation status"
+  debug:
+    msg: "{% if productivity_tools.changed %}Productivity tools installed: {{ productivity_tools.installed | default([]) }}{% else %}No changes to productivity tools{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install cloud storage tools (Yandex Disk)"
   homebrew_cask:
     name:
       - yandex-disk
@@ -177,12 +210,14 @@
     - '"It seems there is already" not in file_sync_tools.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing file sync tools... ({{ file_sync_tools.elapsed }}s)"
-    total: 100
-    current: "{{ (file_sync_tools.elapsed / 100) | int }}"
 
-- name: Add media applications
+- name: "DEBUG | File sync tools installation status"
+  debug:
+    msg: "{% if file_sync_tools.changed %}File sync tools installed: {{ file_sync_tools.installed | default([]) }}{% else %}No changes to file sync tools{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+- name: "Applications | Install media applications (VLC, Handbrake, IINA)"
   homebrew_cask:
     name:
       - vlc
@@ -196,23 +231,29 @@
     - '"It seems there is already" not in media_applications.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
-  community.general.progress_bar:
-    msg: "Installing media applications... ({{ media_applications.elapsed }}s)"
-    total: 100
-    current: "{{ (media_applications.elapsed / 100) | int }}"
 
-- name: Tap fonts' repo
+- name: "DEBUG | Media applications installation status"
+  debug:
+    msg: "{% if media_applications.changed %}Media applications installed: {{ media_applications.installed | default([]) }}{% else %}No changes to media applications{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+###################
+# FONTS SETUP     #
+###################
+
+- name: "DEBUG | Starting Font Installation Section"
+  debug:
+    msg: "Beginning installation of programming fonts"
+
+- name: "Fonts | Add Homebrew cask-fonts repository" 
   homebrew_tap: name=homebrew/cask-fonts
   when: ansible_os_family == 'Darwin'
   tags:
     - common
     - macos
-  community.general.progress_bar:
-    msg: "Tapping fonts' repo... ({{ homebrew_tap.elapsed }}s)"
-    total: 100
-    current: "{{ (homebrew_tap.elapsed / 100) | int }}"
 
-- name: Install fonts
+- name: "Fonts | Install programming fonts (Hack Nerd Font, Fira Code)"
   homebrew_cask:
     name:
       - font-hack-nerd-font
@@ -227,12 +268,22 @@
   tags:
     - common
     - macos
-  community.general.progress_bar:
-    msg: "Installing fonts... ({{ fonts.elapsed }}s)"
-    total: 100
-    current: "{{ (fonts.elapsed / 100) | int }}"
 
-- name: Add screenshots directory
+- name: "DEBUG | Font installation status"
+  debug:
+    msg: "{% if fonts.changed %}Fonts installed: {{ fonts.installed | default([]) }}{% else %}No changes to fonts{% endif %}"
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: true
+
+############################
+# MACOS SYSTEM PREFERENCES #
+############################
+
+- name: "DEBUG | Starting macOS System Preferences Section"
+  debug:
+    msg: "Configuring macOS system preferences"
+
+- name: "macOS | Create screenshots directory on Desktop"
   vars:
     screenshot_dir: ~/Desktop/Screenshots
   register: screenshot_dir
@@ -243,18 +294,25 @@
   tags:
     - common
     - macos
-  community.general.progress_bar:
-    msg: "Adding screenshots directory... ({{ screenshot_dir.elapsed }}s)"
-    total: 100
-    current: "{{ (screenshot_dir.elapsed / 100) | int }}"
 
-- name: Set current screenshot directory
+- name: "DEBUG | Screenshots directory creation status"
+  debug:
+    msg: "Screenshots directory created at {{ screenshot_dir.path }}"
+  when: ansible_os_family == 'Darwin'
+
+- name: "macOS | Configure screenshots to save to custom directory"
   command: "defaults write com.apple.screencapture location {{ screenshot_dir.path }}"
   when: ansible_os_family == 'Darwin'
   tags:
     - common
     - macos
-  community.general.progress_bar:
-    msg: "Setting current screenshot directory... ({{ command.elapsed }}s)"
-    total: 100
-    current: "{{ (command.elapsed / 100) | int }}"
+
+- name: "DEBUG | Screenshot directory configuration status"
+  debug:
+    msg: "Screenshots will now be saved to {{ screenshot_dir.path }}"
+  when: ansible_os_family == 'Darwin'
+
+- name: "DEBUG | COMMON ROLE INSTALLATION COMPLETED"
+  debug:
+    msg: "All common system tools, applications, and configurations have been installed"
+

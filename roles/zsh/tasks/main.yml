@@ -23,20 +23,75 @@
   shell: chsh -s /usr/bin/zsh {{ ansible_env.USER }}
   when: ansible_os_family == 'Ubuntu'
 
-- name: Install zinit
-  homebrew:
-    name:
-      - zinit
-    state: latest
-  when: ansible_os_family == 'Darwin'
-  tags: zsh
-
-- name: Update zinit
-  shell: zinit self-update
-  tags: zsh
-
 - name: Add zshrc file
   copy: 
     src: zshrc 
     dest: ~/.zshrc
   tags: zsh
+
+- name: Create Zinit directory
+  file:
+    path: "{{ ansible_env.HOME }}/.local/share/zinit/zinit.git"
+    state: directory
+    mode: '0755'
+  tags:
+    - zsh
+
+- name: Install Zinit
+  git:
+    repo: https://github.com/zdharma-continuum/zinit.git
+    dest: "{{ ansible_env.HOME }}/.local/share/zinit/zinit.git"
+    depth: 1
+    clone: yes
+    update: yes
+  tags:
+    - zsh
+
+- name: Configure .zshrc to use Zinit
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    regexp: "^source .*/zinit.zsh"
+    line: "source {{ ansible_env.HOME }}/.local/share/zinit/zinit.git/zinit.zsh"
+    state: present
+  tags:
+    - zsh
+
+- name: Configure Zinit plugins in .zshrc
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    marker: "# {mark} ZINIT PLUGINS CONFIGURATION"
+    block: |
+      zinit light zsh-users/zsh-autosuggestions
+      zinit light zdharma-continuum/fast-syntax-highlighting
+      zinit light zsh-users/zsh-completions
+      zinit snippet https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/git/git.plugin.zsh
+      zinit ice depth=1; zinit light romkatv/powerlevel10k
+    state: present
+  tags:
+    - zsh
+
+- name: Configure Zinit auto-update in .zshrc
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    line: "# Enable Zinit auto-update"
+    insertafter: "source {{ ansible_env.HOME }}/.local/share/zinit/zinit.git/zinit.zsh"
+    state: present
+  tags:
+    - zsh
+    
+- name: Add Zinit auto-update command
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    line: "zinit self-update"
+    insertafter: "# Enable Zinit auto-update"
+    state: present
+  tags:
+    - zsh
+
+- name: Remove Homebrew Zinit package if installed
+  homebrew:
+    name: zinit
+    state: absent
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - zsh

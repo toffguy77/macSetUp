@@ -1,0 +1,7 @@
+---
+# Handlers for common role
+
+- name: xcode_install_status
+  ansible.builtin.debug:
+    msg: "XCode has been successfully installed"
+

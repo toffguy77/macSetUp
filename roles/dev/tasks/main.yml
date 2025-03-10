@@ -1,11 +1,12 @@
 ---
 - name: install general development libraries (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - libevent
       - libxml2
       - git
       - golangci-lint
+      - autoenv
       - fzf
       - htop
       - ack
@@ -25,10 +26,9 @@
   register: general_dev
   tags: dev
 
-
 - name: install media libraries (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - ffmpeg
       - x264
       - x265
@@ -42,10 +42,9 @@
   register: media
   tags: media
 
-
 - name: install compression libraries (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - xz
       - zstd
       - brotli
@@ -58,10 +57,9 @@
   register: compression
   tags: compression
 
-
 - name: install security libraries (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - openssl@3
       - ca-certificates
       - gnupg
@@ -70,10 +68,9 @@
   register: security
   tags: security
 
-
 - name: install networking tools (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - nmap
       - curl
       - netcat
@@ -87,10 +84,9 @@
   register: networking
   tags: networking
 
-
 - name: install build tools (Mac)
   community.general.homebrew:
-    name: 
+    name:
       - cmake
       - ninja
       - make
@@ -101,7 +97,6 @@
   when: ansible_os_family == 'Darwin'
   register: build
   tags: build
-
 
 - name: install Kubernetes tools (Mac)
   community.general.homebrew:
@@ -119,7 +114,6 @@
   register: k8s
   tags: k8s
 
-
 - name: install containerization tools (Mac)
   community.general.homebrew:
     name:
@@ -128,7 +122,6 @@
   when: ansible_os_family == 'Darwin'
   register: containerization
   tags: containerization
-
 
 - name: add development desktop tools (Mac)
   community.general.homebrew:
@@ -143,4 +136,3 @@
   when: ansible_os_family == 'Darwin'
   register: desktop_tools
   tags: desktop
-

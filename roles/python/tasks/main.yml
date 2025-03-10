@@ -1,17 +1,15 @@
 ---
-
 - name: install Python versions
   homebrew:
     name:
-      - python
       - python3
       - pypy
     state: present
   tags: python
 
 - name: install uv
-  pip:
-    name: 
+  homebrew:
+    name:
       - uv
   tags: python
 
@@ -29,17 +27,14 @@
 
 - name: Install pip
   block:
-    - name: Install latest Python with brew
-      command: brew install --latest python
-  become: true
+    - name: Install pyp for Python 3
+      command: python -m ensurepip --upgrade
   when: ansible_os_family == 'Darwin'
   tags:
-    - common
-    - macos
+    - python
 
 - name: Setup pip configuration
   copy:
     dest: ~/.pip/pip.conf
     src: pip.conf
   tags: python
-

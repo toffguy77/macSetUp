@@ -1,7 +1,7 @@
 ---
 - name: Install tmux
   homebrew:
-    name: 
+    name:
       - tmux
     state: latest
   when: ansible_os_family == 'Darwin'
@@ -22,10 +22,8 @@
   register: tmux_plugins_dir_result
 
 - name: Add tmux plugin manager
-  git: 
+  git:
     repo: https://github.com/tmux-plugins/tpm.git
     dest: ~/.tmux/plugins/tpm
-    version: v3.0.0
   tags: tmux
   register: tmux_plugin_manager_result
-

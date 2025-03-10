@@ -1,5 +1,47 @@
 ---
-- name: install Go (Mac)
+#####################################
+# GOLANG ENVIRONMENT SETUP
+#####################################
+
+- name: "[START] Beginning Golang environment setup"
+  debug:
+    msg: "Starting Golang environment configuration process"
+
+#####################################
+# Go Language and Linting Tools
+#####################################
+
+- name: "[DEBUG] Checking current Go installation"
+  command: "which go"
+  register: go_exists
+  ignore_errors: yes
+  changed_when: false
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: "[DEBUG] Display current Go version (if installed)"
+  command: "go version"
+  register: go_version
+  ignore_errors: yes
+  changed_when: false
+  when: 
+    - ansible_os_family == 'Darwin'
+    - go_exists.rc == 0
+  tags:
+    - common
+    - macos
+
+- name: "[DEBUG] Show current Go installation status"
+  debug:
+    msg: "{{ go_version.stdout if go_exists.rc == 0 else 'Go not currently installed' }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: "Install Go programming language and golangci-lint code quality tools"
   homebrew:
     name:
       - go
@@ -15,7 +57,49 @@
     - common
     - macos
 
-- name: install Go tools
+- name: "[DEBUG] Display Go installation results"
+  debug:
+    msg: 
+      - "Go installation completed"
+      - "Changed: {{ golang.changed }}"
+      - "Details: {{ golang.msg | default('No message') if golang.msg is defined else 'No additional details' }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: "[DEBUG] Verify Go version after installation"
+  command: "go version"
+  register: go_version_after
+  changed_when: false
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: "[DEBUG] Display installed Go version"
+  debug:
+    msg: "{{ go_version_after.stdout }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+#####################################
+# Go Tools Installation
+#####################################
+
+- name: "[DEBUG] Checking for existing Go tools"
+  command: "ls -la $(go env GOPATH)/bin"
+  register: go_tools_exists
+  ignore_errors: yes
+  changed_when: false
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+- name: "Install Go standard toolchain utilities (go/vet/format/etc)"
   command: go install golang.org/x/tools/...@latest
   register: go_tools
   when: ansible_os_family == 'Darwin'
@@ -23,7 +107,38 @@
     - common
     - macos
 
-- name: install Jetbrains Goland
+- name: "[DEBUG] Display Go tools installation results"
+  debug:
+    msg:
+      - "Go tools installation completed"
+      - "Command: {{ go_tools.cmd }}"
+      - "Return code: {{ go_tools.rc }}" 
+      - "Changed: {{ go_tools.changed }}"
+      - "Stdout: {{ go_tools.stdout | default('No output') }}"
+      - "Stderr: {{ go_tools.stderr | default('No errors') }}"
+  when: ansible_os_family == 'Darwin'
+  tags:
+    - common
+    - macos
+
+#####################################
+# Go IDE Installation
+#####################################
+
+- name: "[DEBUG] Check for existing Goland installation"
+  stat:
+    path: "/Applications/GoLand.app"
+  register: goland_exists
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: "[DEBUG] Display current Goland installation status"
+  debug:
+    msg: "{{ 'Goland is already installed' if goland_exists.stat.exists else 'Goland is not currently installed' }}"
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: "Install JetBrains Goland - Go language IDE"
   homebrew_cask:
     name:
       - goland
@@ -35,4 +150,20 @@
     - '"It seems there is already" not in goland.msg'
   when: ansible_os_family == 'Darwin'
   tags: common
+
+- name: "[DEBUG] Display Goland installation results"
+  debug:
+    msg: 
+      - "Goland installation completed"
+      - "Changed: {{ goland.changed }}"
+      - "Details: {{ goland.msg | default('No message') if goland.msg is defined else 'No additional details' }}"
+  when: ansible_os_family == 'Darwin'
+  tags: common
+
+- name: "[FINISH] Golang environment setup completed"
+  debug:
+    msg: "Golang environment setup has been completed successfully"
+  tags:
+    - common
+    - macos
 
