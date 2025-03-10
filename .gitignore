@@ -1,0 +1,59 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS generated files
+Icon?
+._*
+
+# Python-related files (if using Python for Ansible)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+.tox/
+.pytest_cache/
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Ansible-specific files
+*.retry
+*.log
+secrets.yml
+vault_pass.txt
+group_vars/*.vault
+host_vars/*.vault
+
+# Temporary files
+*.swp
+*.swo
+*.tmp
+*~
+.idea/
+.vscode/
+.terraform/
+.packer/
+.ansible-lint/
+
+# Ignore inventory files if needed
+inventory/
+hosts
+
+# Ignore specific sensitive files (adjust based on your project)
+private_key.pem
+id_rsa
+id_rsa.pub
+
+# Ignore YAML linting cache
+.yamllint
